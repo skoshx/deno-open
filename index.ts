@@ -133,14 +133,6 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
     if (appArguments.length > 0) {
       cliArguments.push(...appArguments);
     }
-    
-    if (!options.wait) {
-      // `xdg-open` will block the process unless stdio is ignored
-      // and it's detached from the parent even if it's unref'd.
-      // runOptions.stdin = 'null';
-      // runOptions.stderr = 'null';
-      // runOptions.stdout = 'null'; // TODO: Remove this?? Cant be here snce no output
-    }
   }
   
   cliArguments.push(target);
@@ -162,9 +154,6 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
   if (options.wait) {
     return new Promise(async (resolve, reject) => {
       const status = await subprocess.status();
-      //const response = await subprocess.output();
-      // const err = await subprocess.stderrOutput();
-      // const [response, err] = await Promise.all([subprocess.output(), subprocess.stderrOutput()]);
       const err = await subprocess.stderrOutput();
       if (err) {
         if (err.length !== 0) reject(new TextDecoder().decode(err));
@@ -176,19 +165,8 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
       }
       
       resolve(subprocess);
-      // subprocess.once('error', reject);
-      
-      /*subprocess.once('close', exitCode => {
-        if (exitCode > 0) {
-          reject(new Error(`Exited with code ${exitCode}`));
-          return;
-        }
-        
-        resolve(subprocess);
-      });*/
     });
   }
-  // subprocess.unref();
   
   return subprocess;
 }
