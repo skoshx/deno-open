@@ -10,7 +10,7 @@
 
 ###### Download
 
-- [Normal](https://path.to.file)
+- [Normal](https://raw.githubusercontent.com/SkoshRG/deno-open/master/index.ts)
 
 ## Usage
 
