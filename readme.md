@@ -8,21 +8,14 @@
 - App arguments
 - Includes `xdg-open` script
 
-## Install
-
-```
-$ deno install --allow-run open https://deno.land/x/open.ts
-```
-
 ###### Download
 
 - [Normal](https://path.to.file)
-- [Minified](https://path.to.file)
 
 ## Usage
 
 ```js
-import { open } from 'https://deno.land/std@v0.35.0/fs/mod.ts';
+import { open } from 'https://deno.land/x/open/index.ts';
 
 // Opens the image in the default image viewer and waits for the opened app to quit.
 await open('image.png', {wait: true});
