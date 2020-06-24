@@ -1,4 +1,4 @@
-import { resolve, normalize, join, relative } from 'https://deno.land/std@v0.35.0/path/posix.ts';
+import { resolve, normalize, join, relative } from 'https://deno.land/std@0.58.0/path/posix.ts';
 const { os } = Deno.build;
 
 /**
@@ -47,7 +47,7 @@ export interface OpenOptions {
 async function isFile(fileName: string): Promise<boolean> {
   try {
     const info = await Deno.stat(fileName)
-    return info.isFile()
+    return info.isFile
   } catch (err) {
     if (err instanceof Deno.errors.NotFound) {
       return false; // File or directory exists
@@ -87,7 +87,7 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
     target = encodeURI(target);
   }
   
-  if (os === 'mac') {
+  if (os === 'darwin') {
     command = 'open';
     
     if (options.wait) {
@@ -101,9 +101,9 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
     if (options.app) {
       cliArguments.push('-a', options.app);
     }
-  } else if (os === 'win') {
+  } else if (os === 'windows') {
     command = 'cmd';
-    cliArguments.push('/s', '/c', 'start', '""', '/b');
+    cliArguments.push('/s', '/c', 'start', '', '/b');
     
     if (options.wait) {
       cliArguments.push('/wait');
@@ -137,13 +137,13 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
   
   cliArguments.push(target);
   
-  if (os === 'mac' && appArguments.length > 0) {
+  if (os === 'darwin' && appArguments.length > 0) {
     cliArguments.push('--args', ...appArguments);
   }
 
   /* Options for the spawned process */
   const runOptions: Deno.RunOptions = {
-    args: [command, ...cliArguments],
+    cmd: [command, ...cliArguments],
     stdin: 'piped',
     stderr: 'piped',
     stdout: 'piped'
