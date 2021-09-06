@@ -1,4 +1,4 @@
-import { resolve, normalize, join, relative } from 'https://deno.land/std@0.58.0/path/posix.ts';
+import { resolve, normalize, join, relative } from 'https://deno.land/std@0.106.0/path/posix.ts';
 const { os } = Deno.build;
 
 /**
