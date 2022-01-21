@@ -1,5 +1,5 @@
-import { assert, assertEquals } from 'https://deno.land/std@0.58.0/testing/asserts.ts';
-import { isAbsolute } from 'https://deno.land/std@0.58.0/path/posix.ts';
+import { assert, assertEquals } from 'https://deno.land/std@0.122.0/testing/asserts.ts';
+import { isAbsolute } from 'https://deno.land/std@0.122.0/path/posix.ts';
 import { getDir, open } from './index.ts';
 const { os } = Deno.build;
 
@@ -9,7 +9,7 @@ let chromeName: string;
 let firefoxName: string;
 
 if (os === 'darwin') {
-	chromeName = 'google chrome canary';
+	chromeName = '/Applications/Google\ Chrome.app';
 	firefoxName = 'firefox';
 } else if (os === 'windows') {
 	chromeName = 'Chrome';
@@ -44,9 +44,7 @@ Deno.test({
 Deno.test({
   name: 'open waits',
   async fn(): Promise<void> {
-    const response = await open('test.png', { wait: true });
-    // @ts-ignore: Uncompatible types
-    // assert(response.length === 0);
+    await open('test.png', { wait: true });
     closeResourceHandles()
   }
 });
@@ -62,7 +60,7 @@ Deno.test({
 Deno.test({
   name: 'open works with arguments',
   async fn(): Promise<void> {
-    await open('https://google.com', { app: [chromeName, '--incognito'] });
+    await open('https://google.com', { app: [chromeName, '-incognito'] });
     closeResourceHandles()
   }
 });
