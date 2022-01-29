@@ -148,10 +148,7 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
     stderr: 'piped',
     stdout: 'piped'
   }
-
-  console.log("Running command");
-  console.log(command, ...cliArguments);
-  
+ 
   const subprocess = Deno.run(runOptions);
   await subprocess.status();
 
