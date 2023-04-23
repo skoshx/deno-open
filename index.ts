@@ -1,4 +1,5 @@
 import { resolve, normalize, join, relative } from 'https://deno.land/std@0.106.0/path/posix.ts';
+import { isWsl } from 'https://deno.land/x/is_wsl@v1.1.0/mod.ts';
 const { os } = Deno.build;
 
 /**
@@ -117,8 +118,11 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
       cliArguments.push(...appArguments);
     }
   } else {
+    let wsl = await isWsl();
     if (options.app) {
       command = options.app;
+    } else if (wsl) {
+      command = 'wslview';
     } else {
       // When bundled by Webpack, there's no actual package file path and no local `xdg-open`.
       const isBundled = !getDir(import.meta.url) || getDir(import.meta.url) === '/';
