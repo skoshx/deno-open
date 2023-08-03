@@ -1,4 +1,5 @@
-import { resolve, normalize, join, relative } from 'https://deno.land/std@0.106.0/path/posix.ts';
+// deno-lint-ignore-file no-async-promise-executor
+import { join } from 'https://deno.land/std@0.106.0/path/posix.ts';
 import { isWsl } from 'https://deno.land/x/is_wsl@v1.1.0/mod.ts';
 const { os } = Deno.build;
 
@@ -59,7 +60,7 @@ async function isFile(fileName: string): Promise<boolean> {
 // Path to included `xdg-open`.
 const localXdgOpenPath = join(getDir(import.meta.url), 'xdg-open');
 
-export async function open(target: string, options?: OpenOptions): Promise<Deno.Process> {
+export async function open(target: string, options?: OpenOptions): Promise<Deno.ChildProcess> {
   if (typeof target !== 'string') {
     throw new TypeError('Expected a target');
   }
@@ -104,7 +105,7 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
     }
   } else if (os === 'windows') {
     command = 'cmd';
-    cliArguments.push('/s', '/c', 'start', '', '/b');
+    cliArguments.push('/c', 'start', '');
     
     if (options.wait) {
       cliArguments.push('/wait');
@@ -118,7 +119,7 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
       cliArguments.push(...appArguments);
     }
   } else {
-    let wsl = await isWsl();
+    const wsl = await isWsl();
     if (options.app) {
       command = options.app;
     } else if (wsl) {
@@ -128,7 +129,7 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
       const isBundled = !getDir(import.meta.url) || getDir(import.meta.url) === '/';
       
       // Check if local `xdg-open` exists and is executable.
-      let exeLocalXdgOpen = await isFile(localXdgOpenPath);
+      const exeLocalXdgOpen = await isFile(localXdgOpenPath);
       
       const useSystemXdgOpen = isBundled || !exeLocalXdgOpen;
       command = useSystemXdgOpen ? 'xdg-open' : localXdgOpenPath;
@@ -139,28 +140,29 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
     }
   }
   
-  cliArguments.push(target);
+  if (os === 'windows') 
+    cliArguments.push(target.replaceAll(/&/g, '"&"'))
+  else 
+    cliArguments.push(target)
+  
   
   if (os === 'darwin' && appArguments.length > 0) {
     cliArguments.push('--args', ...appArguments);
   }
-
-  /* Options for the spawned process */
-  const runOptions: Deno.RunOptions = {
-    cmd: [command, ...cliArguments],
-    stdin: 'piped',
-    stderr: 'piped',
-    stdout: 'piped'
-  }
  
-  const subprocess = Deno.run(runOptions);
-  await subprocess.status();
+  const subprocess = new Deno.Command(command, {
+    args: cliArguments,
+    stdout: 'piped',
+    stderr: 'piped',
+    stdin: 'piped',
+    windowsRawArguments: os === 'windows'
+  }).spawn()
 
   // command: open /Applications/Google\ Chrome.app {url}
   if (options.wait) {
     return new Promise(async (resolve, reject) => {
-      const status = await subprocess.status();
-      const err = await subprocess.stderrOutput();
+      const status = await subprocess.status;
+      const err = (await subprocess.stderr.getReader().read()).value;
       if (err) {
         if (err.length !== 0) reject(new TextDecoder().decode(err));
       }
@@ -173,6 +175,5 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
       resolve(subprocess);
     });
   }
-  
   return subprocess;
 }

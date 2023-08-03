@@ -68,7 +68,7 @@ Deno.test({
 Deno.test({
   name: 'returns process',
   async fn(): Promise<void> {
-    const process: Deno.Process = await open('https://google.com');
+    const process: Deno.ChildProcess = await open('https://google.com');
     assert(typeof process.pid === 'number');
     assert(process.pid !== 0);
     closeResourceHandles()
