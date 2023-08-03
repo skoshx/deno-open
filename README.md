@@ -2,6 +2,8 @@
 
 > open is a package for opening URLs, files and executables. Inspired by [open](https://github.com/sindresorhus/open)
 
+> ⚠ Note: on Windows, if you have search parameters in your URL, you need need to wrap the `&` char in quote marks. See [#9](https://github.com/skoshx/deno-open/issues/9) ⚠
+
 ## Features
 
 - Really simple usage
@@ -59,5 +61,3 @@ Specify the app you want to open the target with.
 #### url: `boolean`
 
 Encodes target with `encodeURI`. Useful for opening URLs.
-
-> Note: on Windows, if you have search parameters in your URL, you need need to wrap the `&` char in quote marks. See [#9](https://github.com/skoshx/deno-open/issues/9)
