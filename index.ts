@@ -174,6 +174,6 @@ export async function open(target: string, options?: OpenOptions): Promise<Deno.
       
       resolve(subprocess);
     });
-  }
+  } else await subprocess.output()
   return subprocess;
 }
