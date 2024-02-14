@@ -1,6 +1,7 @@
-import { assert, assertEquals } from 'https://deno.land/std@0.122.0/testing/asserts.ts';
-import { isAbsolute } from 'https://deno.land/std@0.122.0/path/posix.ts';
-import { getDir, open } from './index.ts';
+import { assert } from "https://deno.land/std@0.215.0/assert/assert.ts";
+import { assertEquals } from "https://deno.land/std@0.215.0/assert/assert_equals.ts";
+import { isAbsolute } from "https://deno.land/std@0.215.0/path/posix/is_absolute.ts";
+import { getDir, open } from "./index.ts";
 const { os } = Deno.build;
 
 // Tests for open Deno package
@@ -8,69 +9,70 @@ const { os } = Deno.build;
 let chromeName: string;
 let firefoxName: string;
 
-if (os === 'darwin') {
-	chromeName = '/Applications/Google\ Chrome.app';
-	firefoxName = 'firefox';
-} else if (os === 'windows') {
-	chromeName = 'Chrome';
-	firefoxName = 'C:\\Program Files\\Mozilla Firefox\\firefox.exe';
-} else if (os === 'linux') {
-	chromeName = 'google-chrome';
-	firefoxName = 'firefox';
-}
-
-function closeResourceHandles () {
-  const resourceIds = Object.keys(Deno.resources()).map(strId => parseInt(strId)).slice(3,)
-  resourceIds.forEach(id => Deno.close(id))
+if (os === "darwin") {
+  chromeName = "/Applications/Google\ Chrome.app";
+  firefoxName = "firefox";
+} else if (os === "windows") {
+  chromeName = "Chrome";
+  firefoxName = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
+} else if (os === "linux") {
+  chromeName = "google-chrome";
+  firefoxName = "firefox";
 }
 
 Deno.test({
-  name: 'getDir works',
+  name: "getDir works",
   fn(): void {
     const currentDir = getDir(import.meta.url);
     assert(isAbsolute(currentDir));
-    assertEquals(currentDir.substr(currentDir.length - 4, currentDir.length), 'open');
-  }
+    assertEquals(currentDir.slice(currentDir.length - 4), "open");
+  },
 });
 
 Deno.test({
-  name: 'open works without options',
+  name: "open works without options",
   async fn(): Promise<void> {
-    await open('index.ts');
-    closeResourceHandles()
-  }
+    const process = await open("index.ts");
+    process.kill();
+    await process.output();
+  },
 });
 
 Deno.test({
-  name: 'open waits',
+  name: "open waits",
   async fn(): Promise<void> {
-    await open('test.png', { wait: true });
-    closeResourceHandles()
-  }
+    const process = await open("test.png", { wait: true });
+    await process.status;
+  },
 });
 
 Deno.test({
-  name: 'url gets encoded',
+  name: "url gets encoded",
   async fn(): Promise<void> {
-    await open('https://google.com', { url: true });
-    closeResourceHandles()
-  }
+    const process = await open("https://google.com", { url: true });
+    process.kill();
+    await process.output();
+  },
 });
 
 Deno.test({
-  name: 'open works with arguments',
+  name: "open works with arguments",
   async fn(): Promise<void> {
-    await open('https://google.com', { app: [chromeName, '-incognito'] });
-    closeResourceHandles()
-  }
+    const process = await open("https://google.com", {
+      app: [chromeName, "-incognito"],
+    });
+    process.kill();
+    await process.output();
+  },
 });
 
 Deno.test({
-  name: 'returns process',
+  name: "returns process",
   async fn(): Promise<void> {
-    const process: Deno.Process = await open('https://google.com');
-    assert(typeof process.pid === 'number');
+    const process: Deno.ChildProcess = await open("https://google.com");
+    assert(typeof process.pid === "number");
     assert(process.pid !== 0);
-    closeResourceHandles()
-  }
+    process.kill();
+    await process.output();
+  },
 });
